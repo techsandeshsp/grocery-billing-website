@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grocery Billing System - India</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.2em;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .items-section {
+            margin-bottom: 30px;
+        }
+
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .items-table thead {
+            background: #4a5568;
+            color: white;
+        }
+
+        .items-table th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .items-table tbody tr {
+            border-bottom: 1px solid #e2e8f0;
+            transition: background 0.2s;
+        }
+
+        .items-table tbody tr:hover {
+            background: #f7fafc;
+        }
+
+        .items-table td {
+            padding: 15px;
+        }
+
+        .item-name {
+            font-weight: 500;
+            color: #2d3748;
+        }
+
+        .quantity-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .qty-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            width: 35px;
+            height: 35px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        .qty-btn:hover {
+            background: #5568d3;
+        }
+
+        .qty-btn:active {
+            transform: scale(0.95);
+        }
+
+        .qty-input {
+            width: 60px;
+            text-align: center;
+            border: 2px solid #cbd5e0;
+            border-radius: 5px;
+            padding: 8px;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .price {
+            font-weight: 600;
+            color: #38a169;
+            font-size: 1.1em;
+        }
+
+        .generate-bill-btn {
+            display: block;
+            width: 100%;
+            max-width: 300px;
+            margin: 30px auto;
+            padding: 18px;
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.3em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 15px rgba(56, 161, 105, 0.3);
+        }
+
+        .generate-bill-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(56, 161, 105, 0.4);
+        }
+
+        .generate-bill-btn:active {
+            transform: translateY(0);
+        }
+
+        .bill-section {
+            display: none;
+            margin-top: 40px;
+            padding: 30px;
+            background: #f7fafc;
+            border-radius: 10px;
+            border: 2px solid #cbd5e0;
+        }
+
+        .bill-section.active {
+            display: block;
+        }
+
+        .bill-header {
+            text-align: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px dashed #4a5568;
+        }
+
+        .bill-header h2 {
+            color: #2d3748;
+            font-size: 2em;
+            margin-bottom: 5px;
+        }
+
+        .bill-items {
+            margin-bottom: 25px;
+        }
+
+        .bill-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .bill-item-details {
+            flex: 1;
+        }
+
+        .bill-item-name {
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .bill-item-qty {
+            color: #718096;
+            font-size: 0.9em;
+        }
+
+        .bill-item-price {
+            font-weight: 600;
+            color: #38a169;
+            min-width: 100px;
+            text-align: right;
+        }
+
+        .bill-totals {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #4a5568;
+        }
+
+        .bill-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            font-size: 1.1em;
+        }
+
+        .bill-row.subtotal {
+            color: #4a5568;
+        }
+
+        .bill-row.gst {
+            color: #718096;
+        }
+
+        .bill-row.total {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #2d3748;
+            padding-top: 15px;
+            border-top: 2px solid #4a5568;
+            margin-top: 10px;
+        }
+
+        .payment-section {
+            margin-top: 30px;
+            padding: 25px;
+            background: white;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .payment-section h3 {
+            color: #2d3748;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .qr-code {
+            width: 200px;
+            height: 200px;
+            margin: 20px auto;
+            background: white;
+            padding: 15px;
+            border: 2px solid #cbd5e0;
+            border-radius: 10px;
+        }
+
+        .upi-id {
+            background: #edf2f7;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-family: monospace;
+            font-size: 1.1em;
+            color: #2d3748;
+            font-weight: 600;
+        }
+
+        .print-btn {
+            margin-top: 20px;
+            padding: 12px 30px;
+            background: #4a5568;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .print-btn:hover {
+            background: #2d3748;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                padding: 15px;
+            }
+
+            header h1 {
+                font-size: 1.6em;
+            }
+
+            .items-table {
+                font-size: 0.9em;
+            }
+
+            .items-table th,
+            .items-table td {
+                padding: 10px 5px;
+            }
+
+            .qty-input {
+                width: 50px;
+            }
+
+            .bill-section {
+                padding: 15px;
+            }
+        }
+
+        @media print {
+            body {
+                background: white;
+            }
+
+            .container {
+                box-shadow: none;
+            }
+
+            .items-section,
+            .generate-bill-btn,
+            .print-btn {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🛒 Grocery Billing System</h1>
+            <p>Select items and quantities to generate your bill</p>
+        </header>
+
+        <div class="content">
+            <div class="items-section">
+                <table class="items-table">
+                    <thead>
+                        <tr>
+                            <th>Item Name</th>
+                            <th>Quantity</th>
+                            <th>Price (₹)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="itemsTableBody">
+                        <!-- Items will be inserted here by JavaScript -->
+                    </tbody>
+                </table>
+
+                <button class="generate-bill-btn" onclick="generateBill()">
+                    📋 Generate Bill
+                </button>
+            </div>
+
+            <div class="bill-section" id="billSection">
+                <div class="bill-header">
+                    <h2>📄 BILL SUMMARY</h2>
+                    <p id="billDate"></p>
+                </div>
+
+                <div class="bill-items" id="billItems">
+                    <!-- Bill items will be inserted here -->
+                </div>
+
+                <div class="bill-totals">
+                    <div class="bill-row subtotal">
+                        <span>Subtotal:</span>
+                        <span id="subtotalAmount">₹0.00</span>
+                    </div>
+                    <div class="bill-row gst">
+                        <span>GST (5%):</span>
+                        <span id="gstAmount">₹0.00</span>
+                    </div>
+                    <div class="bill-row total">
+                        <span>TOTAL:</span>
+                        <span id="totalAmount">₹0.00</span>
+                    </div>
+                </div>
+
+                <div class="payment-section">
+                    <h3>💳 Payment Options</h3>
+                    <div style="margin: 20px 0;">
+                        <img src="qr.jpeg" 
+     
+                             alt="PhonePe QR Code" 
+                             style="max-width: 100%; height: auto; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                    </div>
+                    <div class="upi-id">
+                        UPI ID: 9886391696-2@ybl
+                    </div>
+                    <p style="color: #718096; margin-top: 10px; font-size: 0.95em;">
+                        Scan the QR code with PhonePe, Google Pay, or any UPI app
+                    </p>
+                    <button class="print-btn" onclick="window.print()">🖨️ Print Bill</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const groceryItems = [
+            { name: "Rice (Common)", unit: "1 kg", minPrice: 42, maxPrice: 45 },
+            { name: "Wheat (Whole)", unit: "1 kg", minPrice: 31, maxPrice: 33 },
+            { name: "Wheat Atta", unit: "1 kg", minPrice: 37, maxPrice: 40 },
+            { name: "Toor / Arhar Dal", unit: "1 kg", minPrice: 115, maxPrice: 120 },
+            { name: "Moong Dal", unit: "1 kg", minPrice: 108, maxPrice: 112 },
+            { name: "Urad Dal", unit: "1 kg", minPrice: 112, maxPrice: 116 },
+            { name: "Masoor Dal", unit: "1 kg", minPrice: 86, maxPrice: 90 },
+            { name: "Gram Dal (Chana)", unit: "1 kg", minPrice: 82, maxPrice: 86 },
+            { name: "Sugar", unit: "1 kg", minPrice: 45, maxPrice: 48 },
+            { name: "Salt (Iodized)", unit: "1 kg", minPrice: 20, maxPrice: 22 },
+            { name: "Milk (Toned)", unit: "1 Litre", minPrice: 58, maxPrice: 62 },
+            { name: "Sunflower Oil (Packed)", unit: "1 kg", minPrice: 165, maxPrice: 175 },
+            { name: "Mustard Oil (Packed)", unit: "1 kg", minPrice: 180, maxPrice: 190 },
+            { name: "Tea (Loose)", unit: "1 kg", minPrice: 260, maxPrice: 280 },
+            { name: "Potato", unit: "1 kg", minPrice: 20, maxPrice: 25 },
+            { name: "Onion", unit: "1 kg", minPrice: 26, maxPrice: 30 },
+            { name: "Tomato", unit: "1 kg", minPrice: 35, maxPrice: 40 },
+            { name: "Garlic", unit: "1 kg", minPrice: 150, maxPrice: 180 },
+            { name: "Ginger", unit: "1 kg", minPrice: 90, maxPrice: 110 },
+            { name: "Green Chilly", unit: "1 kg", minPrice: 45, maxPrice: 55 },
+            { name: "Carrot", unit: "1 kg", minPrice: 14, maxPrice: 18 },
+            { name: "Cabbage", unit: "1 kg", minPrice: 30, maxPrice: 35 },
+            { name: "Banana", unit: "1 kg", minPrice: 45, maxPrice: 50 },
+            { name: "Eggs", unit: "1 Dozen", minPrice: 80, maxPrice: 85 },
+            { name: "Besan (Gram Flour)", unit: "1 kg", minPrice: 94, maxPrice: 98 }
+        ];
+
+        // Initialize the table
+        function initializeTable() {
+            const tbody = document.getElementById('itemsTableBody');
+            groceryItems.forEach((item, index) => {
+                const avgPrice = (item.minPrice + item.maxPrice) / 2;
+                const row = `
+                    <tr>
+                        <td class="item-name">${item.name}<br><small style="color: #718096;">${item.unit}</small></td>
+                        <td>
+                            <div class="quantity-control">
+                                <button class="qty-btn" onclick="changeQuantity(${index}, -1)">−</button>
+                                <input type="number" class="qty-input" id="qty-${index}" value="0" min="0" 
+                                       onchange="updatePrice(${index})" />
+                                <button class="qty-btn" onclick="changeQuantity(${index}, 1)">+</button>
+                            </div>
+                        </td>
+                        <td class="price" id="price-${index}">₹0.00</td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+        }
+
+        function changeQuantity(index, change) {
+            const qtyInput = document.getElementById(`qty-${index}`);
+            let newQty = parseInt(qtyInput.value) + change;
+            if (newQty < 0) newQty = 0;
+            qtyInput.value = newQty;
+            updatePrice(index);
+        }
+
+        function updatePrice(index) {
+            const qtyInput = document.getElementById(`qty-${index}`);
+            const qty = parseInt(qtyInput.value) || 0;
+            const item = groceryItems[index];
+            const avgPrice = (item.minPrice + item.maxPrice) / 2;
+            const totalPrice = qty * avgPrice;
+            document.getElementById(`price-${index}`).textContent = `₹${totalPrice.toFixed(2)}`;
+        }
+
+        function generateBill() {
+            let subtotal = 0;
+            let billItemsHTML = '';
+            let hasItems = false;
+
+            groceryItems.forEach((item, index) => {
+                const qty = parseInt(document.getElementById(`qty-${index}`).value) || 0;
+                if (qty > 0) {
+                    hasItems = true;
+                    const avgPrice = (item.minPrice + item.maxPrice) / 2;
+                    const itemTotal = qty * avgPrice;
+                    subtotal += itemTotal;
+
+                    billItemsHTML += `
+                        <div class="bill-item">
+                            <div class="bill-item-details">
+                                <div class="bill-item-name">${item.name}</div>
+                                <div class="bill-item-qty">${qty} × ${item.unit} @ ₹${avgPrice.toFixed(2)}</div>
+                            </div>
+                            <div class="bill-item-price">₹${itemTotal.toFixed(2)}</div>
+                        </div>
+                    `;
+                }
+            });
+
+            if (!hasItems) {
+                alert('Please select at least one item to generate the bill!');
+                return;
+            }
+
+            const gst = subtotal * 0.05;
+            const total = subtotal + gst;
+
+            document.getElementById('billItems').innerHTML = billItemsHTML;
+            document.getElementById('subtotalAmount').textContent = `₹${subtotal.toFixed(2)}`;
+            document.getElementById('gstAmount').textContent = `₹${gst.toFixed(2)}`;
+            document.getElementById('totalAmount').textContent = `₹${total.toFixed(2)}`;
+
+            const now = new Date();
+            document.getElementById('billDate').textContent = now.toLocaleDateString('en-IN', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            document.getElementById('billSection').classList.add('active');
+            document.getElementById('billSection').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Initialize on page load
+        initializeTable();
+    </script>
+</body>
+</html>
